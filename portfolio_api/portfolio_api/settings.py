@@ -135,7 +135,7 @@ STATIC_URL = '/static/'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://portfolio-api-qx01.onrender.com"
+    "https://portfolio-w43s.onrender.com"
 ]
 
 CORS_ALLOW_METHODS = [
