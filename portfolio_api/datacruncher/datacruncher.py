@@ -34,6 +34,8 @@ class Datacruncher(object):
             project_db.disconnect()
             factors = [str(x) for x in range(14)]
             prediction_slice = pd.DataFrame([data])
+            for factor in factors:
+                prediction_slice[factor] = pd.to_numeric(prediction_slice[factor])
             simulation = umod.recommend(models,prediction_slice.copy(),factors)
             simulation["prediction"] = (simulation["cat_prediction"] + simulation["xgb_prediction"] ) / 2
             data["prediction"] = round(simulation["prediction"].item(),2)
