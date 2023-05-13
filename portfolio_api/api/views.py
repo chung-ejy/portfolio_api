@@ -30,57 +30,58 @@ def apiView(request):
                 product["prediction"] = round(simulation["prediction"].item(),2)
                 product["project"] = project
                 complete = product
-            elif project == "Faker":
-                speculation_db = ADatabase("news")
-                speculation_db.cloud_connect()
-                model = speculation_db.retrieve("models")
-                speculation_db.disconnect()
-                m = pickle.loads(model["model"].item())
-                data = {}
-                data["text"] = request.GET.get("text")
-                data["title"] = request.GET.get("title")
-                complete = {}
-                texttb = TextBlob(data["text"])
-                titletb = TextBlob(data["title"])
-                complete["tpolarity"] = titletb.sentiment.polarity
-                complete["tsubjectivity"] = titletb.sentiment.subjectivity
-                complete["polarity"] = texttb.sentiment.polarity
-                complete["subjectivity"] = texttb.sentiment.subjectivity
-                classification = int(m.predict(pd.DataFrame([complete])))
-                complete["classification"] = classification
-                complete["title"] = data["title"]
-                complete["text"] = data["text"]
             else:
-                try:
-                    artist_name = request.GET.get("artist_name")
-                    track_name = request.GET.get("track_name")
-                    spotify = Spotify()
-                    spotify.cloud_connect()
-                    current = spotify.find_song_uri(artist_name,track_name).iloc[0]
-                    spotify.disconnect()
-                    current_pid = current["pid"]
-                    uri = current["track_uri"]
-                    spotify.cloud_connect()
-                    included_playlists = spotify.find_included_playlists(uri)
-                    pids = included_playlists["pid"].unique()
-                    spotify.disconnect()
-                    aggregate = []
-                    spotify.cloud_connect()
-                    for pid in pids:
-                        if pid != current_pid:
-                            songs = spotify.find_playlist_songs(int(pid))
-                            aggregate.append(songs)
-                    spotify.disconnect()
-                    s = pd.concat(aggregate)
-                    max_follower = s["num_holdouts"].max()
-                    s["follower_percentage"] = s["num_holdouts"] / max_follower
-                    s["count"] = 1 * s["follower_percentage"]
-                    analysis = s.groupby(["track_uri","artist_uri","artist_name","track_name"]).sum().reset_index()
-                    recs = analysis.sort_values("count",ascending=False)
-                    rec = recs[(recs["track_name"] != track_name)].sort_values("count",ascending=False).iloc[1]
-                    complete = {"artist_name":artist_name,"track_name":track_name,"artist_rec":rec["artist_name"],"track_rec":rec["track_name"]}
-                except Exception as e:
-                    complete = {"artist_name":artist_name,"track_name":track_name,"artist_rec":"none found","track_rec":"none found","error":str(e)}
+                if project == "Faker":
+                    speculation_db = ADatabase("news")
+                    speculation_db.cloud_connect()
+                    model = speculation_db.retrieve("models")
+                    speculation_db.disconnect()
+                    m = pickle.loads(model["model"].item())
+                    data = {}
+                    data["text"] = request.GET.get("text")
+                    data["title"] = request.GET.get("title")
+                    complete = {}
+                    texttb = TextBlob(data["text"])
+                    titletb = TextBlob(data["title"])
+                    complete["tpolarity"] = titletb.sentiment.polarity
+                    complete["tsubjectivity"] = titletb.sentiment.subjectivity
+                    complete["polarity"] = texttb.sentiment.polarity
+                    complete["subjectivity"] = texttb.sentiment.subjectivity
+                    classification = int(m.predict(pd.DataFrame([complete])))
+                    complete["classification"] = classification
+                    complete["title"] = data["title"]
+                    complete["text"] = data["text"]
+                else:
+                    try:
+                        artist_name = request.GET.get("artist_name")
+                        track_name = request.GET.get("track_name")
+                        spotify = Spotify()
+                        spotify.cloud_connect()
+                        current = spotify.find_song_uri(artist_name,track_name).iloc[0]
+                        spotify.disconnect()
+                        current_pid = current["pid"]
+                        uri = current["track_uri"]
+                        spotify.cloud_connect()
+                        included_playlists = spotify.find_included_playlists(uri)
+                        pids = included_playlists["pid"].unique()
+                        spotify.disconnect()
+                        aggregate = []
+                        spotify.cloud_connect()
+                        for pid in pids:
+                            if pid != current_pid:
+                                songs = spotify.find_playlist_songs(int(pid))
+                                aggregate.append(songs)
+                        spotify.disconnect()
+                        s = pd.concat(aggregate)
+                        max_follower = s["num_holdouts"].max()
+                        s["follower_percentage"] = s["num_holdouts"] / max_follower
+                        s["count"] = 1 * s["follower_percentage"]
+                        analysis = s.groupby(["track_uri","artist_uri","artist_name","track_name"]).sum().reset_index()
+                        recs = analysis.sort_values("count",ascending=False)
+                        rec = recs[(recs["track_name"] != track_name)].sort_values("count",ascending=False).iloc[1]
+                        complete = {"artist_name":artist_name,"track_name":track_name,"artist_rec":rec["artist_name"],"track_rec":rec["track_name"]}
+                    except Exception as e:
+                        complete = {"artist_name":artist_name,"track_name":track_name,"artist_rec":"none found","track_rec":"none found","error":str(e)}
         elif request.method == "DELETE":
             complete = {}
         elif request.method == "UPDATE":
