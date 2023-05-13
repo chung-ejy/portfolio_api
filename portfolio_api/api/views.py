@@ -17,7 +17,7 @@ def apiView(request):
             project = request.GET.get("project")
             if project in ["Longshot","Comet"]:
                 speculation_db = ADatabase(project.lower())
-                speculation_db.connect()
+                speculation_db.cloud_connect()
                 models = speculation_db.retrieve("models")
                 speculation_db.disconnect()
                 product = {}
@@ -32,7 +32,7 @@ def apiView(request):
                 complete = product
             elif project == "Faker":
                 speculation_db = ADatabase("news")
-                speculation_db.connect()
+                speculation_db.cloud_connect()
                 model = speculation_db.retrieve("models")
                 speculation_db.disconnect()
                 m = pickle.loads(model["model"].item())
@@ -55,17 +55,17 @@ def apiView(request):
                     artist_name = request.GET.get("artist_name")
                     track_name = request.GET.get("track_name")
                     spotify = Spotify()
-                    spotify.connect()
+                    spotify.cloud_connect()
                     current = spotify.find_song_uri(artist_name,track_name).iloc[0]
                     spotify.disconnect()
                     current_pid = current["pid"]
                     uri = current["track_uri"]
-                    spotify.connect()
+                    spotify.cloud_connect()
                     included_playlists = spotify.find_included_playlists(uri)
                     pids = included_playlists["pid"].unique()
                     spotify.disconnect()
                     aggregate = []
-                    spotify.connect()
+                    spotify.cloud_connect()
                     for pid in pids:
                         if pid != current_pid:
                             songs = spotify.find_playlist_songs(int(pid))
