@@ -5,8 +5,9 @@ from django.views.decorators.csrf import csrf_exempt
 from database.adatabase import ADatabase
 from database.spotify import Spotify
 from modeler_strats.universal_modeler import UniversalModeler
-
+from textblob import TextBlob
 import pandas as pd
+import pickle
 umod = UniversalModeler()
 
 @csrf_exempt
@@ -16,7 +17,7 @@ def apiView(request):
             project = request.GET.get("project")
             if project in ["Longshot","Comet"]:
                 speculation_db = ADatabase(project.lower())
-                speculation_db.cloud_connect()
+                speculation_db.connect()
                 models = speculation_db.retrieve("models")
                 speculation_db.disconnect()
                 product = {}
@@ -29,22 +30,42 @@ def apiView(request):
                 product["prediction"] = round(simulation["prediction"].item(),2)
                 product["project"] = project
                 complete = product
+            elif project == "Faker":
+                speculation_db = ADatabase("news")
+                speculation_db.connect()
+                model = speculation_db.retrieve("models")
+                speculation_db.disconnect()
+                m = pickle.loads(model["model"].item())
+                data = {}
+                data["text"] = request.GET.get("text")
+                data["title"] = request.GET.get("title")
+                complete = {}
+                texttb = TextBlob(data["text"])
+                titletb = TextBlob(data["title"])
+                complete["tpolarity"] = titletb.sentiment.polarity
+                complete["tsubjectivity"] = titletb.sentiment.subjectivity
+                complete["polarity"] = texttb.sentiment.polarity
+                complete["subjectivity"] = texttb.sentiment.subjectivity
+                classification = int(m.predict(pd.DataFrame([complete])))
+                complete["classification"] = classification
+                complete["title"] = data["title"]
+                complete["text"] = data["text"]
             else:
                 try:
                     artist_name = request.GET.get("artist_name")
                     track_name = request.GET.get("track_name")
                     spotify = Spotify()
-                    spotify.cloud_connect()
+                    spotify.connect()
                     current = spotify.find_song_uri(artist_name,track_name).iloc[0]
                     spotify.disconnect()
                     current_pid = current["pid"]
                     uri = current["track_uri"]
-                    spotify.cloud_connect()
+                    spotify.connect()
                     included_playlists = spotify.find_included_playlists(uri)
                     pids = included_playlists["pid"].unique()
                     spotify.disconnect()
                     aggregate = []
-                    spotify.cloud_connect()
+                    spotify.connect()
                     for pid in pids:
                         if pid != current_pid:
                             songs = spotify.find_playlist_songs(int(pid))
