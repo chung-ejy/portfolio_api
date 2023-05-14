@@ -29,7 +29,7 @@ class Datacruncher(object):
         try:
             project = data["project"]
             project_db = ADatabase(project.lower())
-            project_db.connect()
+            project_db.cloud_connect()
             models = project_db.retrieve("models")
             project_db.disconnect()
             factors = [str(x) for x in range(14)]
@@ -50,7 +50,7 @@ class Datacruncher(object):
     def dopa_cruncher(self,data):
         project_db = ADatabase("dopa")
         factors = ["FirstBlood","FirstTower","FirstBaron","FirstDragon","FirstInhibitor"]
-        project_db.connect()
+        project_db.cloud_connect()
         models = project_db.retrieve("models")
         project_db.disconnect()
         try:
@@ -66,7 +66,7 @@ class Datacruncher(object):
     @classmethod
     def faker_cruncher(self,data):
         project_db = ADatabase("news")
-        project_db.connect()
+        project_db.cloud_connect()
         model = project_db.retrieve("models")
         project_db.disconnect()
         m = pickle.loads(model["model"].item())
@@ -89,17 +89,17 @@ class Datacruncher(object):
             artist_name = data["artist_name"]
             track_name = data["track_name"]
             spotify = Spotify()
-            spotify.connect()
+            spotify.cloud_connect()
             current = spotify.find_song_uri(artist_name,track_name).iloc[0]
             spotify.disconnect()
             current_pid = current["pid"]
             uri = current["track_uri"]
-            spotify.connect()
+            spotify.cloud_connect()
             included_playlists = spotify.find_included_playlists(uri)
             pids = included_playlists["pid"].unique()
             spotify.disconnect()
             aggregate = []
-            spotify.connect()
+            spotify.cloud_connect()
             for pid in pids:
                 if pid != current_pid:
                     songs = spotify.find_playlist_songs(int(pid))
