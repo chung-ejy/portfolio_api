@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from datacruncher.datacruncher import Datacruncher
 # Create your views here.
 
-@csrf_exempt
+# @csrf_exempt
 def apiView(request):
     try:
         if request.method == "GET":
