@@ -92,7 +92,7 @@ class Datacruncher(object):
     @classmethod
     def feedback_cruncher(self,data):
         project_db = ADatabase("feedback")
-        project_db.connect()
+        project_db.cloud_connect()
         project_db.store("data",pd.DataFrame([data]))
         project_db.disconnect()
         complete = {}
@@ -105,18 +105,18 @@ class Datacruncher(object):
             track_name = data["track_name"]
             if len(artist_name) < 30 and len(track_name) < 30:
                 spotify = Spotify()
-                spotify.connect()
+                spotify.cloud_connect()
                 current = spotify.find_song_uri(artist_name,track_name).iloc[0]
                 spotify.store("data",pd.DataFrame([data]))
                 spotify.disconnect()
                 current_pid = current["pid"]
                 uri = current["track_uri"]
-                spotify.connect()
+                spotify.cloud_connect()
                 included_playlists = spotify.find_included_playlists(uri)
                 pids = included_playlists["pid"].unique()
                 spotify.disconnect()
                 aggregate = []
-                spotify.connect()
+                spotify.cloud_connect()
                 for pid in pids:
                     if pid != current_pid:
                         songs = spotify.find_playlist_songs(int(pid))
