@@ -21,7 +21,10 @@ class Datacruncher(object):
                 if project == "Shuffle":
                     complete = Datacruncher.shuffle_cruncher(data)
                 else:
-                    complete = Datacruncher.dopa_cruncher(data)
+                    if project == "Dopa":
+                        complete = Datacruncher.dopa_cruncher(data)
+                    else:
+                        complete = Datacruncher.feedback_cruncher(data)
         return complete
     
     @classmethod
@@ -84,6 +87,15 @@ class Datacruncher(object):
         complete["classification"] = classification
         complete["title"] = data["title"]
         complete["text"] = data["text"]
+        return complete
+    
+    @classmethod
+    def feedback_cruncher(self,data):
+        project_db = ADatabase("feedback")
+        project_db.connect()
+        project_db.store("data",pd.DataFrame([data]))
+        project_db.disconnect()
+        complete = {}
         return complete
 
     @classmethod
