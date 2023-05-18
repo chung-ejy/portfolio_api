@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'modeler',
     'modeler_strats',
     'rest_framework',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -144,4 +145,17 @@ CORS_ALLOW_METHODS = [
     "GET",
     "POST",
     "PUT",
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'mode',
 ]

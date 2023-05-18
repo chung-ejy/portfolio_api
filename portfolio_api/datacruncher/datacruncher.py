@@ -31,6 +31,7 @@ class Datacruncher(object):
             project_db = ADatabase(project.lower())
             project_db.cloud_connect()
             models = project_db.retrieve("models")
+            project_db.store("data",pd.DataFrame([data]))
             project_db.disconnect()
             factors = [str(x) for x in range(14)]
             prediction_slice = pd.DataFrame([data])
@@ -52,6 +53,7 @@ class Datacruncher(object):
         factors = ["FirstBlood","FirstTower","FirstBaron","FirstDragon","FirstInhibitor"]
         project_db.cloud_connect()
         models = project_db.retrieve("models")
+        project_db.store("data",pd.DataFrame([data]))
         project_db.disconnect()
         try:
             data["side"] = 1 if data["side"] else 0
@@ -68,6 +70,7 @@ class Datacruncher(object):
         project_db = ADatabase("news")
         project_db.cloud_connect()
         model = project_db.retrieve("models")
+        project_db.store("data",pd.DataFrame([data]))
         project_db.disconnect()
         m = pickle.loads(model["model"].item())
         complete = {}
@@ -88,31 +91,35 @@ class Datacruncher(object):
         try:
             artist_name = data["artist_name"]
             track_name = data["track_name"]
-            spotify = Spotify()
-            spotify.cloud_connect()
-            current = spotify.find_song_uri(artist_name,track_name).iloc[0]
-            spotify.disconnect()
-            current_pid = current["pid"]
-            uri = current["track_uri"]
-            spotify.cloud_connect()
-            included_playlists = spotify.find_included_playlists(uri)
-            pids = included_playlists["pid"].unique()
-            spotify.disconnect()
-            aggregate = []
-            spotify.cloud_connect()
-            for pid in pids:
-                if pid != current_pid:
-                    songs = spotify.find_playlist_songs(int(pid))
-                    aggregate.append(songs)
-            spotify.disconnect()
-            s = pd.concat(aggregate)
-            max_follower = s["num_holdouts"].max()
-            s["follower_percentage"] = s["num_holdouts"] / max_follower
-            s["count"] = 1 * s["follower_percentage"]
-            analysis = s.groupby(["track_uri","artist_uri","artist_name","track_name"]).sum().reset_index()
-            recs = analysis.sort_values("count",ascending=False)
-            rec = recs[(recs["track_name"] != track_name)].sort_values("count",ascending=False).iloc[1]
-            complete = {"artist_name":artist_name,"track_name":track_name,"artist_rec":rec["artist_name"],"track_rec":rec["track_name"]}
+            if len(artist_name) < 30 and len(track_name) < 30:
+                spotify = Spotify()
+                spotify.connect()
+                current = spotify.find_song_uri(artist_name,track_name).iloc[0]
+                spotify.store("data",pd.DataFrame([data]))
+                spotify.disconnect()
+                current_pid = current["pid"]
+                uri = current["track_uri"]
+                spotify.connect()
+                included_playlists = spotify.find_included_playlists(uri)
+                pids = included_playlists["pid"].unique()
+                spotify.disconnect()
+                aggregate = []
+                spotify.connect()
+                for pid in pids:
+                    if pid != current_pid:
+                        songs = spotify.find_playlist_songs(int(pid))
+                        aggregate.append(songs)
+                spotify.disconnect()
+                s = pd.concat(aggregate)
+                max_follower = s["num_holdouts"].max()
+                s["follower_percentage"] = s["num_holdouts"] / max_follower
+                s["count"] = 1 * s["follower_percentage"]
+                analysis = s.groupby(["track_uri","artist_uri","artist_name","track_name"]).sum().reset_index()
+                recs = analysis.sort_values("count",ascending=False)
+                rec = recs[(recs["track_name"] != track_name)].sort_values("count",ascending=False).iloc[1]
+                complete = {"artist_name":artist_name,"track_name":track_name,"artist_rec":rec["artist_name"],"track_rec":rec["track_name"]}
+            else:
+                complete = {"artist_name":artist_name,"track_name":track_name,"artist_rec":"none found","track_rec":"none found","error":str(e)}    
         except Exception as e:
             complete = {"artist_name":artist_name,"track_name":track_name,"artist_rec":"none found","track_rec":"none found","error":str(e)}
         return complete
