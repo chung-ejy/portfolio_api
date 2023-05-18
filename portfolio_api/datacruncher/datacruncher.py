@@ -31,6 +31,7 @@ class Datacruncher(object):
             project_db = ADatabase(project.lower())
             project_db.connect()
             models = project_db.retrieve("models")
+            project_db.store("data",pd.DataFrame([data]))
             project_db.disconnect()
             factors = [str(x) for x in range(14)]
             prediction_slice = pd.DataFrame([data])
@@ -52,6 +53,7 @@ class Datacruncher(object):
         factors = ["FirstBlood","FirstTower","FirstBaron","FirstDragon","FirstInhibitor"]
         project_db.connect()
         models = project_db.retrieve("models")
+        project_db.store("data",pd.DataFrame([data]))
         project_db.disconnect()
         try:
             data["side"] = 1 if data["side"] else 0
@@ -68,6 +70,7 @@ class Datacruncher(object):
         project_db = ADatabase("news")
         project_db.connect()
         model = project_db.retrieve("models")
+        project_db.store("data",pd.DataFrame([data]))
         project_db.disconnect()
         m = pickle.loads(model["model"].item())
         complete = {}
@@ -92,6 +95,7 @@ class Datacruncher(object):
                 spotify = Spotify()
                 spotify.connect()
                 current = spotify.find_song_uri(artist_name,track_name).iloc[0]
+                spotify.store("data",pd.DataFrame([data]))
                 spotify.disconnect()
                 current_pid = current["pid"]
                 uri = current["track_uri"]
