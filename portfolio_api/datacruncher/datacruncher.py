@@ -95,7 +95,7 @@ class Datacruncher(object):
         project_db.cloud_connect()
         project_db.store("data",pd.DataFrame([data]))
         project_db.disconnect()
-        complete = {}
+        complete = {"project_name":"","user":"","feedback":"","project":"feedback"}
         return complete
 
     @classmethod
