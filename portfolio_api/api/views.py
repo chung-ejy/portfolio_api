@@ -6,7 +6,7 @@ from datacruncher.datacruncher import Datacruncher
 def apiView(request):
     try:
         if request.method == "GET":
-            complete = {}
+            complete = Datacruncher.blog_cruncher()
         elif request.method == "DELETE":
             complete = {}
         elif request.method == "UPDATE":

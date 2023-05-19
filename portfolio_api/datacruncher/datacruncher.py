@@ -24,7 +24,10 @@ class Datacruncher(object):
                     if project == "Dopa":
                         complete = Datacruncher.dopa_cruncher(data)
                     else:
-                        complete = Datacruncher.feedback_cruncher(data)
+                        if project == "Blog":
+                            complete = Datacruncher.blog_cruncher(data)
+                        else:
+                            complete = Datacruncher.feedback_cruncher(data)
         return complete
     
     @classmethod
@@ -96,6 +99,15 @@ class Datacruncher(object):
         project_db.store("data",pd.DataFrame([data]))
         project_db.disconnect()
         complete = {"project_name":"","user":"","feedback":"","project":"feedback"}
+        return complete
+
+    @classmethod
+    def blog_cruncher(self):
+        project_db = ADatabase("blogs")
+        project_db.connect()
+        blogs = project_db.retrieve("data")
+        project_db.disconnect()
+        complete = {"blogs":blogs.to_dict("records"),"project":"blog"}
         return complete
 
     @classmethod
