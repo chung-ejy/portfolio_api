@@ -104,7 +104,7 @@ class Datacruncher(object):
     @classmethod
     def blog_cruncher(self):
         project_db = ADatabase("blogs")
-        project_db.connect()
+        project_db.cloud_connect()
         blogs = project_db.retrieve("data")
         project_db.disconnect()
         complete = {"blogs":blogs.to_dict("records"),"project":"blog"}
