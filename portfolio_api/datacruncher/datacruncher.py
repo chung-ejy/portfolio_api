@@ -107,7 +107,9 @@ class Datacruncher(object):
         project_db.cloud_connect()
         blogs = project_db.retrieve("data")
         project_db.disconnect()
-        complete = {"blogs":blogs.to_dict("records"),"project":"blog"}
+        blogs = blogs.to_dict("records")
+        blogs.reverse()
+        complete = {"blogs":blogs,"project":"blog"}
         return complete
 
     @classmethod
