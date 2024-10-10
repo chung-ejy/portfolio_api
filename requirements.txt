@@ -10,6 +10,6 @@ django-cors-headers==3.11.0
 django-rest-knox==4.1.0
 djangorestframework==3.10.2
 dnspython==1.16.0
-catboost==1.0.3
+catboost==1.2
 xgboost==1.5.1
 scikit-learn==1.0.2
