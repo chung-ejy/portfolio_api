@@ -26,7 +26,8 @@ def apiView(request):
 def visualizationView(request):
     try:
         if request.method == "GET":
-            db = ADatabase("sapling")
+            strategy_name = request.GET.get('strategy_name', None)  # Get the strategy_name from the GET parameters
+            db = ADatabase(strategy_name)
             db.cloud_connect()
             data = db.retrieve("visualization").fillna(0).to_dict("records")
             db.disconnect()
@@ -47,7 +48,8 @@ def visualizationView(request):
 def tradesView(request):
     try:
         if request.method == "GET":
-            db = ADatabase("sapling")
+            strategy_name = request.GET.get('strategy_name', None)  # Get the strategy_name from the GET parameters
+            db = ADatabase(strategy_name)
             db.cloud_connect()
             data = db.retrieve("trades").fillna(0).to_dict("records")
             db.disconnect()
