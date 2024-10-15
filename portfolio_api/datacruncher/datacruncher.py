@@ -82,8 +82,7 @@ class Datacruncher(object):
 
         # Convert token indices to words
         predicted_text = ' '.join([reverse_word_map.get(idx, '') for idx in predicted_sequence])
-        data["response"] = predicted_text
-        return data
+        return {"response":predicted_text}
 
     @classmethod
     def price_cruncher(self,data):
