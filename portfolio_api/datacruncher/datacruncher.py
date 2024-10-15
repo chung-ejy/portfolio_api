@@ -49,9 +49,12 @@ class Datacruncher(object):
         model_df = db.retrieve("model")
         db.disconnect()
 
-        # Load the model architecture from JSON
-        model = model_from_json(model_df["model"].item())
+        model_json = model_df["model"].item()
+        modified_json = model_json.replace('"batch_input_shape": [null,', '"input_shape": [')
+        modified_json = modified_json.replace('"batch_shape": [null,', '"input_shape": [')
 
+        # Load the model without batch shape
+        model = model_from_json(modified_json)
         # Load the tokenizer from the database
         tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
         tokenizer = pickle.loads(tokenizer_serialized)
