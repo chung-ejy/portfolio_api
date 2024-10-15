@@ -50,13 +50,13 @@ class Datacruncher(object):
         db.disconnect()
 
         model_json = model_df["model"].item()
-        modified_json = model_json.replace('"batch_input_shape": [null,', '"input_shape": [')
-        modified_json = modified_json.replace('"batch_shape": [null,', '"input_shape": [').replace(
-                '"dtype": { "module": "keras", "class_name": "DTypePolicy", "config": { "name": "float32" }, "registered_name": null },', 
-                ''
-            )
-        # Load the model without batch shape
-        model = model_from_json(modified_json)
+        # modified_json = model_json.replace('"batch_input_shape": [null,', '"input_shape": [')
+        # modified_json = modified_json.replace('"batch_shape": [null,', '"input_shape": [').replace(
+        #         '"dtype": { "module": "keras", "class_name": "DTypePolicy", "config": { "name": "float32" }, "registered_name": null },', 
+        #         ''
+        #     )
+        # # Load the model without batch shape
+        model = model_from_json(model_json)
         # Load the tokenizer from the database
         tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
         tokenizer = pickle.loads(tokenizer_serialized)
