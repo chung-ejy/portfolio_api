@@ -5,6 +5,12 @@ from textblob import TextBlob
 import pandas as pd
 import pickle
 import json
+from tensorflow.keras.models import model_from_json
+from database.adatabase import ADatabase
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+import base64
+import pickle
+
 umod = UniversalModeler()
 
 class Datacruncher(object):
@@ -27,9 +33,58 @@ class Datacruncher(object):
                         if project == "Blog":
                             complete = Datacruncher.blog_cruncher(data)
                         else:
-                            complete = Datacruncher.feedback_cruncher(data)
+                            if project =="Reported":
+                                complete = Datacruncher.reported_cruncher(data)
+                            else:
+                                complete = Datacruncher.feedback_cruncher(data)
+
         return complete
     
+    @classmethod
+    def reported_cruncher(self,data):
+        user_input = data["proompt"]
+        # Connect to the database and retrieve model and tokenizer
+        db = ADatabase("reported")
+        db.cloud_connect()
+        model_df = db.retrieve("model")
+        db.disconnect()
+
+        # Load the model architecture from JSON
+        model = model_from_json(model_df["model"].item())
+
+        # Load the tokenizer from the database
+        tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
+        tokenizer = pickle.loads(tokenizer_serialized)
+
+        # Load and set the model weights
+        weights_serialized = base64.b64decode(model_df["weights"].item())
+        model_weights = pickle.loads(weights_serialized)
+        model.set_weights(model_weights)
+
+
+        # Tokenize and pad the input sequence
+        input_sequence = tokenizer.texts_to_sequences([user_input])
+
+        # Get the model's expected input length
+        max_input_len = model.input_shape[1]
+
+        # Pad the input sequence to the model's expected length
+        input_padded = pad_sequences(input_sequence, maxlen=max_input_len, padding='post')
+
+        # Predict the output sequence
+        predictions = model.predict(input_padded)
+
+        # Convert prediction (token indices) back to text
+        predicted_sequence = predictions.argmax(axis=-1)[0]  # Get the predicted token indices
+
+        # Create reverse mapping from token index to word
+        reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
+
+        # Convert token indices to words
+        predicted_text = ' '.join([reverse_word_map.get(idx, '') for idx in predicted_sequence])
+        data["response"] = predicted_text
+        return data
+
     @classmethod
     def price_cruncher(self,data):
         try:
