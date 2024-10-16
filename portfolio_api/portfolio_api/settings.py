@@ -37,6 +37,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 # Application definition
 
 INSTALLED_APPS = [
+    'llm',
     'datacruncher',
     'database',
     'api',
