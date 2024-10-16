@@ -12,6 +12,25 @@ import base64
 import pickle
 from llm import build_transformer_model
 umod = UniversalModeler()
+db = ADatabase("reported")
+db.cloud_connect()
+model_df = db.retrieve("model")
+db.disconnect()
+
+# Load the model architecture from JSON
+model = model_from_json(model_df["model"].item())
+
+# Load the tokenizer from the database
+tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
+tokenizer = pickle.loads(tokenizer_serialized)
+
+# Load and set the model weights
+weights_serialized = base64.b64decode(model_df["weights"].item())
+model_weights = pickle.loads(weights_serialized)
+model.set_weights(model_weights)
+
+# Get the model's expected input length
+max_input_len = model.input_shape[1]
 
 class Datacruncher(object):
     @classmethod
@@ -45,36 +64,39 @@ class Datacruncher(object):
         try:
             user_input = str(data["proompt"])[:10]
 
-            # Step 1: Connect to the database and retrieve model and tokenizer
-            db = ADatabase("reported")
-            db.cloud_connect()
-            model_df = db.retrieve("model")
-            db.disconnect()
+            # # Step 1: Connect to the database and retrieve model and tokenizer
+            # db = ADatabase("reported")
+            # db.cloud_connect()
+            # model_df = db.retrieve("model")
+            # db.disconnect()
 
-            # Load the model architecture from JSON
-            model = model_from_json(model_df["model"].item())
+            # # Load the model architecture from JSON
+            # model = model_from_json(model_df["model"].item())
 
-            # Load the tokenizer from the database
-            tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
-            tokenizer = pickle.loads(tokenizer_serialized)
+            # # Load the tokenizer from the database
+            # tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
+            # tokenizer = pickle.loads(tokenizer_serialized)
 
-            # Load and set the model weights
-            weights_serialized = base64.b64decode(model_df["weights"].item())
-            model_weights = pickle.loads(weights_serialized)
-            model.set_weights(model_weights)
+            # # Load and set the model weights
+            # weights_serialized = base64.b64decode(model_df["weights"].item())
+            # model_weights = pickle.loads(weights_serialized)
+            # model.set_weights(model_weights)
 
 
+            # # Tokenize and pad the input sequence
+            # input_sequence = tokenizer.texts_to_sequences([user_input])
+
+
+            # # Get the model's expected input length
+            # max_input_len = model.input_shape[1]
+
+
+            # # Pad the input sequence to the model's expected length
+            # input_padded = pad_sequences(input_sequence, maxlen=max_input_len, padding='post')
             # Tokenize and pad the input sequence
             input_sequence = tokenizer.texts_to_sequences([user_input])
-
-
-            # Get the model's expected input length
-            max_input_len = model.input_shape[1]
-
-
             # Pad the input sequence to the model's expected length
             input_padded = pad_sequences(input_sequence, maxlen=max_input_len, padding='post')
-
 
             # Predict the output sequence
             predictions = model.predict(input_padded)
