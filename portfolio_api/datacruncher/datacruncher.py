@@ -11,23 +11,28 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import base64
 import pickle
 from llm import build_transformer_model
+from tensorflow.keras.models import load_model
 umod = UniversalModeler()
-db = ADatabase("reported")
-db.cloud_connect()
-model_df = db.retrieve("model")
-db.disconnect()
+# db = ADatabase("reported")
+# db.cloud_connect()
+# model_df = db.retrieve("model")
+# db.disconnect()
 
-# Load the model architecture from JSON
-model = model_from_json(model_df["model"].item())
+# # Load the model architecture from JSON
+# model = model_from_json(model_df["model"].item())
+
+with open('tokenizer.pickle', 'rb') as handle:
+    tokenizer = pickle.load(handle)
+model = load_model('transformer_model.h5')
 
 # Load the tokenizer from the database
-tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
-tokenizer = pickle.loads(tokenizer_serialized)
+# tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
+# tokenizer = pickle.loads(tokenizer_serialized)
 
 # Load and set the model weights
-weights_serialized = base64.b64decode(model_df["weights"].item())
-model_weights = pickle.loads(weights_serialized)
-model.set_weights(model_weights)
+# weights_serialized = base64.b64decode(model_df["weights"].item())
+# model_weights = pickle.loads(weights_serialized)
+# model.set_weights(model_weights)
 
 # Get the model's expected input length
 max_input_len = model.input_shape[1]
