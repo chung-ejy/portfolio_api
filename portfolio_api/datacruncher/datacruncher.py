@@ -40,6 +40,7 @@ class Datacruncher(object):
 
         return complete
     
+    @classmethod
     def reported_cruncher(self, data):
         # Extract user input from the data
         user_input = data["proompt"]
