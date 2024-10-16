@@ -10,7 +10,7 @@ from database.adatabase import ADatabase
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import base64
 import pickle
-
+from llm import build_transformer_model
 umod = UniversalModeler()
 
 class Datacruncher(object):
@@ -43,7 +43,7 @@ class Datacruncher(object):
     @classmethod
     def reported_cruncher(self, data):
         try:
-            user_input = str(data["proompt"])
+            user_input = str(data["proompt"])[:10]
 
             # Step 1: Connect to the database and retrieve model and tokenizer
             db = ADatabase("reported")
