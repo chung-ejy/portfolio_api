@@ -19,21 +19,21 @@ model_df = db.retrieve("model")
 db.disconnect()
 
 # Load the model architecture from JSON
-model = model_from_json(model_df["model"].item())
+# model = model_from_json(model_df["model"].item())
 
-# with open('./tokenizer.pickle', 'rb') as handle:
-#     tokenizer = pickle.load(handle)
-# model = load_model('./model.h5')
+# # with open('./tokenizer.pickle', 'rb') as handle:
+# #     tokenizer = pickle.load(handle)
+# # model = load_model('./model.h5')
 
-tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
-tokenizer = pickle.loads(tokenizer_serialized)
+# tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
+# tokenizer = pickle.loads(tokenizer_serialized)
 
-weights_serialized = base64.b64decode(model_df["weights"].item())
-model_weights = pickle.loads(weights_serialized)
-model.set_weights(model_weights)
+# weights_serialized = base64.b64decode(model_df["weights"].item())
+# model_weights = pickle.loads(weights_serialized)
+# model.set_weights(model_weights)
 
-# Get the model's expected input length
-max_input_len = model.input_shape[1]
+# # Get the model's expected input length
+# max_input_len = model.input_shape[1]
 
 class Datacruncher(object):
     @classmethod
@@ -97,24 +97,24 @@ class Datacruncher(object):
             # # Pad the input sequence to the model's expected length
             # input_padded = pad_sequences(input_sequence, maxlen=max_input_len, padding='post')
             # Tokenize and pad the input sequence
-            input_sequence = tokenizer.texts_to_sequences([user_input])
-            # Pad the input sequence to the model's expected length
-            input_padded = pad_sequences(input_sequence, maxlen=max_input_len, padding='post')
+            # input_sequence = tokenizer.texts_to_sequences([user_input])
+            # # Pad the input sequence to the model's expected length
+            # input_padded = pad_sequences(input_sequence, maxlen=max_input_len, padding='post')
 
-            # Predict the output sequence
-            predictions = model.predict(input_padded)
+            # # Predict the output sequence
+            # predictions = model.predict(input_padded)
 
 
-            # Convert prediction (token indices) back to text
-            predicted_sequence = predictions.argmax(axis=-1)[0]  # Get the predicted token indices
+            # # Convert prediction (token indices) back to text
+            # predicted_sequence = predictions.argmax(axis=-1)[0]  # Get the predicted token indices
 
-            # Create reverse mapping from token index to word
-            reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
+            # # Create reverse mapping from token index to word
+            # reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
 
-            # Convert token indices to words
-            predicted_text = ' '.join([reverse_word_map.get(idx, '') for idx in predicted_sequence])
+            # # Convert token indices to words
+            # predicted_text = ' '.join([reverse_word_map.get(idx, '') for idx in predicted_sequence])
 
-            return {"response": predicted_text}
+            return {"response": user_input}
         
         except ValueError as ve:
             return {"error": f"ValueError: {ve}"}
