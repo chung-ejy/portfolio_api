@@ -42,56 +42,59 @@ class Datacruncher(object):
     
     @classmethod
     def reported_cruncher(self, data):
-        # Extract user input from the data
-        user_input = data["proompt"]
+        try:
+            user_input = data["proompt"]
 
-        # Step 1: Connect to the database and retrieve model and tokenizer
-        db = ADatabase("reported")
-        db.cloud_connect()
-        model_df = db.retrieve("model")
-        db.disconnect()
+            # Step 1: Connect to the database and retrieve model and tokenizer
+            db = ADatabase("reported")
+            db.cloud_connect()
+            model_df = db.retrieve("model")
+            db.disconnect()
 
-        # Step 2: Load the model architecture from JSON
-        model_json = model_df["model"].item()  # Retrieve the model architecture JSON
-        model = model_from_json(model_json)
+            # Load the model architecture from JSON
+            model = model_from_json(model_df["model"].item())
 
-        # Step 3: Deserialize and load the tokenizer
-        tokenizer_encoded = model_df["tokenizer"].item()  # Retrieve the base64-encoded tokenizer
-        tokenizer_serialized = base64.b64decode(tokenizer_encoded)
-        tokenizer = pickle.loads(tokenizer_serialized)
+            # Load the tokenizer from the database
+            tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
+            tokenizer = pickle.loads(tokenizer_serialized)
 
-        # Step 4: Deserialize and load the model weights
-        weights_base64 = model_df["weights"].item()  # Retrieve the base64-encoded weights
-        weights_serialized = base64.b64decode(weights_base64)
-        model_weights = pickle.loads(weights_serialized)
+            # Load and set the model weights
+            weights_serialized = base64.b64decode(model_df["weights"].item())
+            model_weights = pickle.loads(weights_serialized)
+            model.set_weights(model_weights)
 
-        # Step 5: Set the deserialized weights to the model
-        model.set_weights(model_weights)
 
-        # Step 6: Tokenize and pad the user input sequence
-        input_sequence = tokenizer.texts_to_sequences([user_input])
+            # Tokenize and pad the input sequence
+            input_sequence = tokenizer.texts_to_sequences([user_input])
 
-        # Check if the input sequence is empty after tokenization
-        if len(input_sequence[0]) == 0:
-            return {"response": "Invalid input: the input is not in the vocabulary."}
 
-        # Step 7: Get the model's expected input length and pad the input sequence
-        max_input_len = model.input_shape[1]  # Retrieve model's input length
-        input_padded = pad_sequences(input_sequence, maxlen=max_input_len, padding='post')
+            # Get the model's expected input length
+            max_input_len = model.input_shape[1]
 
-        # Step 8: Predict the output sequence using the model
-        predictions = model.predict(input_padded)
 
-        # Step 9: Convert the prediction (token indices) back to text
-        predicted_sequence = predictions.argmax(axis=-1)[0]  # Get the predicted token indices
+            # Pad the input sequence to the model's expected length
+            input_padded = pad_sequences(input_sequence, maxlen=max_input_len, padding='post')
 
-        # Step 10: Create reverse mapping from token index to word
-        reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
 
-        # Convert token indices to words
-        predicted_text = ' '.join([reverse_word_map.get(idx, '') for idx in predicted_sequence if idx != 0])
+            # Predict the output sequence
+            predictions = model.predict(input_padded)
 
-        return {"response": predicted_text}
+
+            # Convert prediction (token indices) back to text
+            predicted_sequence = predictions.argmax(axis=-1)[0]  # Get the predicted token indices
+
+            # Create reverse mapping from token index to word
+            reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
+
+            # Convert token indices to words
+            predicted_text = ' '.join([reverse_word_map.get(idx, '') for idx in predicted_sequence])
+
+            return {"response": predicted_text}
+        
+        except ValueError as ve:
+            return {"error": f"ValueError: {ve}"}
+        except Exception as e:
+            return {"error": f"An error occurred: {str(e)}"}
 
     @classmethod
     def price_cruncher(self,data):
