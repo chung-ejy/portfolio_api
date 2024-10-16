@@ -23,7 +23,7 @@ umod = UniversalModeler()
 
 with open('./tokenizer.pickle', 'rb') as handle:
     tokenizer = pickle.load(handle)
-model = load_model('./transformer_model.h5')
+model = load_model('./model.h5')
 
 # Load the tokenizer from the database
 # tokenizer_serialized = base64.b64decode(model_df["tokenizer"].item())
