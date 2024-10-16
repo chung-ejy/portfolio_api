@@ -43,7 +43,7 @@ class Datacruncher(object):
     @classmethod
     def reported_cruncher(self, data):
         try:
-            user_input = data["proompt"]
+            user_input = str(data["proompt"])
 
             # Step 1: Connect to the database and retrieve model and tokenizer
             db = ADatabase("reported")
