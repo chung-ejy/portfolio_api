@@ -9,10 +9,6 @@ def apiView(request):
     try:
         if request.method == "GET":
             complete = Datacruncher.blog_cruncher()
-        elif request.method == "DELETE":
-            complete = {}
-        elif request.method == "UPDATE":
-            complete = {}
         elif request.method == "POST":
             data = request.body
             complete = Datacruncher.factory(data)
@@ -32,12 +28,6 @@ def visualizationView(request):
             data = db.retrieve("visualization").fillna(0).to_dict("records")
             db.disconnect()
             complete = {"visualization":data}
-        elif request.method == "DELETE":
-            complete = {}
-        elif request.method == "UPDATE":
-            complete = {}
-        elif request.method == "POST":
-            complete = {}
         else:
             complete = {}
     except Exception as e:
@@ -54,12 +44,21 @@ def tradesView(request):
             data = db.retrieve("trades").fillna(0).to_dict("records")
             db.disconnect()
             complete = {"trades":data}
-        elif request.method == "DELETE":
+        else:
             complete = {}
-        elif request.method == "UPDATE":
-            complete = {}
-        elif request.method == "POST":
-            complete = {}
+    except Exception as e:
+        complete = {"data":[],"errors":str(e)}
+    return JsonResponse(complete,safe=False)
+
+@csrf_exempt
+def rafView(request):
+    try:
+        if request.method == "GET":
+            db = ADatabase("raf")
+            db.cloud_connect()
+            data = db.retrieve("screener").fillna(0).to_dict("records")
+            db.disconnect()
+            complete = {"screener":data}
         else:
             complete = {}
     except Exception as e:
