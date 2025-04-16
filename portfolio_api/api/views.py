@@ -71,7 +71,7 @@ def raffiftyView(request):
         if request.method == "GET":
             db = ADatabase("raf")
             db.cloud_connect()
-            data = db.retrieve("fifty_screener").fillna(0).to_dict("records")
+            data = db.retrieve("fifty_screener").fillna(0).round(2).to_dict("records")
             db.disconnect()
             complete = {"fifty_screener":data}
         else:
