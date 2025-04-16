@@ -64,3 +64,18 @@ def rafView(request):
     except Exception as e:
         complete = {"data":[],"errors":str(e)}
     return JsonResponse(complete,safe=False)
+
+@csrf_exempt
+def raffiftyView(request):
+    try:
+        if request.method == "GET":
+            db = ADatabase("raf")
+            db.cloud_connect()
+            data = db.retrieve("fifty_screener").fillna(0).to_dict("records")
+            db.disconnect()
+            complete = {"fifty_screener":data}
+        else:
+            complete = {}
+    except Exception as e:
+        complete = {"data":[],"errors":str(e)}
+    return JsonResponse(complete,safe=False)
